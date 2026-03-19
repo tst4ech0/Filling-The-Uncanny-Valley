@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay Style Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .file-input-wrapper {
+            margin-bottom: 15px;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #667eea;
+            border-radius: 6px;
+            width: 100%;
+            background: white;
+            cursor: pointer;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .baseline-count {
+            background: #e7f3ff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            color: #0066cc;
+            font-weight: 600;
+        }
+        
+        #results {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .score-number {
+            font-size: 64px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .score-label {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .features-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .features-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+        }
+        
+        .features-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        
+        .features-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .z-score {
+            font-weight: 600;
+        }
+        
+        .z-score.high { color: #d32f2f; }
+        .z-score.medium { color: #f57c00; }
+        .z-score.low { color: #388e3c; }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Essay Style Checker</h1>
+        <p class="subtitle">Upload baseline essays to create a writing profile, then test a new essay for similarity</p>
+        
+        <!-- Baseline Essays Section -->
+        <div class="section">
+            <h2>Step 1: Upload Baseline Essays</h2>
+            <p style="margin-bottom: 15px; color: #666; font-size: 13px;">
+                Upload 2-5 essays known to be authentic student work
+            </p>
+            <div class="file-input-wrapper">
+                <input type="file" id="baselineFile" accept=".txt,.docx,.pdf">
+            </div>
+            <button onclick="addBaseline()">Add Baseline Essay</button>
+            <button onclick="clearBaselines()" style="background: #dc3545; margin-left: 10px;">Clear All</button>
+            
+            <div id="baselineCount" class="baseline-count" style="display: none;">
+                Baseline essays loaded: <span id="count">0</span>
+                <div id="fileList" style="margin-top: 10px; font-size: 12px; color: #555;">
+                 </div>
+            </div>
+            <div id="loadingIndicator" style="display: none; margin-top: 10px; color: #667eea; font-weight: 600;">
+                ⏳ Processing file...
+            </div>
+            <div id="baselineMessage"></div>
+        </div>
+        
+        <!-- Test Essay Section -->
+        <div class="section">
+            <h2>Step 2: Upload Essay to Test</h2>
+            <div class="file-input-wrapper">
+                <input type="file" id="testFile" accept=".txt,.docx,.pdf">
+            </div>
+            <button onclick="analyzeEssay()" id="analyzeBtn">🔍 Analyze Essay</button>
+            <div id="analysisMessage"></div>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="results">
+            <h2>Results</h2>
+            <div class="score-display">
+                <div class="score-label">Similarity Score</div>
+                <div class="score-number" id="scoreNumber">--</div>
+                <div class="score-label">Based on <span id="numBaselines">0</span> baseline essays</div>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px 0; color: #333;">Feature Analysis</h3>
+            <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                Features sorted by how different they are from the baseline (z-score)
+            </p>
+            <table class="features-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Test Value</th>
+                        <th>Baseline Mean</th>
+                        <th>Z-Score</th>
+                    </tr>
+                </thead>
+                <tbody id="featuresBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+function addBaseline() {
+    const fileInput = document.getElementById('baselineFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        showMessage('baselineMessage', 'Please select a file', 'error');
+        return;
+    }
+    
+    // Show loading indicator
+    document.getElementById('loadingIndicator').style.display = 'block';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    fetch('/add_baseline', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Hide loading indicator
+        document.getElementById('loadingIndicator').style.display = 'none';
+        
+        if (data.success) {
+            document.getElementById('baselineCount').style.display = 'block';
+            document.getElementById('count').textContent = data.count;
+            
+            // Add filename to the list
+            const fileList = document.getElementById('fileList');
+            const fileItem = document.createElement('div');
+            fileItem.textContent = `${data.count}. ${data.filename}`;
+            fileItem.style.marginTop = '5px';
+            fileList.appendChild(fileItem);
+            
+            showMessage('baselineMessage', data.message, 'success');
+            fileInput.value = '';
+        }
+    })
+    .catch(error => {
+        document.getElementById('loadingIndicator').style.display = 'none';
+        showMessage('baselineMessage', 'Error uploading file', 'error');
+    });
+}
+        
+function clearBaselines() {
+    fetch('/clear_baselines', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('baselineCount').style.display = 'none';
+        document.getElementById('count').textContent = '0';
+        document.getElementById('fileList').innerHTML = ''; // Clear file list
+        showMessage('baselineMessage', data.message, 'success');
+        document.getElementById('results').style.display = 'none';
+    });
+}
+        
+        function analyzeEssay() {
+            const fileInput = document.getElementById('testFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('analysisMessage', 'Please select a test essay', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            document.getElementById('analyzeBtn').disabled = true;
+            showMessage('analysisMessage', 'Analyzing...', 'success');
+            
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage('analysisMessage', data.error, 'error');
+                } else {
+                    displayResults(data);
+                    showMessage('analysisMessage', 'Analysis complete!', 'success');
+                }
+                document.getElementById('analyzeBtn').disabled = false;
+            })
+            .catch(error => {
+                showMessage('analysisMessage', 'Error analyzing essay', 'error');
+                document.getElementById('analyzeBtn').disabled = false;
+            });
+        }
+        
+        function displayResults(data) {
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('scoreNumber').textContent = data.similarity_score + '%';
+            document.getElementById('numBaselines').textContent = data.num_baselines;
+            
+            const tbody = document.getElementById('featuresBody');
+            tbody.innerHTML = '';
+            
+            data.features.forEach(feature => {
+                const row = tbody.insertRow();
+                
+                // Feature name
+                row.insertCell(0).textContent = feature.feature.replace(/_/g, ' ');
+                
+                // Test value
+                row.insertCell(1).textContent = feature.new_value.toFixed(3);
+                
+                // Baseline mean
+                row.insertCell(2).textContent = feature.baseline_mean.toFixed(3);
+                
+                // Z-score with color coding
+                const zScoreCell = row.insertCell(3);
+                const zScore = feature.z_score;
+                zScoreCell.textContent = zScore.toFixed(2);
+                zScoreCell.className = 'z-score ' + 
+                    (zScore > 3 ? 'high' : zScore > 1.5 ? 'medium' : 'low');
+            });
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showMessage(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = type;
+            el.style.display = 'block';
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
