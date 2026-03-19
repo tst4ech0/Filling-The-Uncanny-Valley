@@ -122,6 +122,19 @@ This tool creates a personalized writing profile for each student based on basel
 - Should be used as a screening tool, not definitive proof
 - Best used in combination with other academic integrity measures
 
+## Considerations for baseline selections
+Use essays with similar prompts types and expectations. Using a diverse writing sample leads to higher variance in the baseline, and thus a much higher chance for false positives. 
+- Example of a bad set of samples for a baseline dataset
+  - A discussion post reply from canvas discussing class expectations
+  - A chemistry lab report detailing experimental work
+  - An English essay about Shakespear
+- Example of what would make a good baseline dataset
+  - An essay from the student’s poetry class last semester
+  - An English essay about Shakespear turned in earlier this semester
+  - Multiple discussion posts focused around class topics and material
+
+Keep in mind that how effective this program is at telling students from AI relies heavily on being able to effectively analyze patterns in the student, not patterns in AI. Ergo, the baseline essays are critically important to getting good results
+
 ## Technical Details
 
 ### Features Extracted
@@ -168,7 +181,7 @@ This project was developed as a proof of concept for educational technology. Con
 
 ## License
 
-[Add your chosen license here]
+MIT
 
 ## Acknowledgments
 
@@ -176,7 +189,7 @@ Developed as part of [competition/course name] to address the growing challenge 
 
 ## Contact
 
-[Your contact information or leave blank]
+trnm@durhamtech.edu
 
 ---
 
