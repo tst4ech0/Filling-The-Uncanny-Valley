@@ -185,7 +185,7 @@ MIT
 
 ## Acknowledgments
 
-Developed as part of [competition/course name] to address the growing challenge of AI-generated academic content while respecting student privacy and emphasizing educational support over punitive measures.
+Developed as part of DTCC AI Competition to address the growing challenge of AI-generated academic content while respecting student privacy and emphasizing educational support over punitive measures.
 
 ## Contact
 
